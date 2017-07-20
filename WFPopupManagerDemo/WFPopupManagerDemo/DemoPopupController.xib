@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="DemoPopupController">
+            <connections>
+                <outlet property="dismissButton" destination="hdb-Qz-AIE" id="2aw-NN-Prp"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="260" height="300"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="rte-9f-qpP">
+                    <rect key="frame" x="0.0" y="0.0" width="260" height="300"/>
+                    <color key="backgroundColor" red="1" green="0.43230310358257817" blue="0.44081295808591758" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                </imageView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hdb-Qz-AIE">
+                    <rect key="frame" x="30" y="236" width="200" height="44"/>
+                    <color key="backgroundColor" red="0.28810455550000003" green="0.42339426019999998" blue="1" alpha="1" colorSpace="calibratedRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="44" id="oQ6-nK-Q55"/>
+                    </constraints>
+                    <state key="normal" title="dismiss"/>
+                    <connections>
+                        <action selector="onTapButton:" destination="-1" eventType="touchUpInside" id="fLb-qh-mnF"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="rte-9f-qpP" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="5lo-J3-K2W"/>
+                <constraint firstAttribute="trailing" secondItem="hdb-Qz-AIE" secondAttribute="trailing" constant="30" id="8eo-JE-MbF"/>
+                <constraint firstAttribute="bottom" secondItem="hdb-Qz-AIE" secondAttribute="bottom" constant="20" id="Ejd-Ge-o0w"/>
+                <constraint firstAttribute="bottom" secondItem="rte-9f-qpP" secondAttribute="bottom" id="G7P-Do-gWk"/>
+                <constraint firstItem="rte-9f-qpP" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="O6m-tb-ay8"/>
+                <constraint firstAttribute="trailing" secondItem="rte-9f-qpP" secondAttribute="trailing" id="UQ3-O8-c1i"/>
+                <constraint firstItem="hdb-Qz-AIE" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="30" id="mGR-1S-ZqI"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+        </view>
+    </objects>
+</document>
