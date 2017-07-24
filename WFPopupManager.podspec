@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
                    Copyright (c) 2016 江文帆. All rights reserved.
                  LICENSE
                }
-  s.homepage     = 'http://www.jwfstars.com'
+  s.homepage     = 'https://github.com/jwfstars/WFPopupManager.git'
   s.authors      =  { "江文帆" => "jwfstars@icloud.com" }
   s.summary      = 'WFPopupManager'
 
