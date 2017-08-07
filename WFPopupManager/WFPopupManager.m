@@ -275,5 +275,20 @@ static WFPopupManager *_instance;
         });
     }];
 }
+
+- (void)setOffsetY:(CGFloat)offset animated:(BOOL)animated
+{
+    [UIView animateWithDuration:animated?.3f:.0f animations:^{
+        self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2 + offset);
+    }];
+}
 @end
 
+@implementation UIViewController (WFPopupManager)
+
+- (void)wf_dismiss
+{
+    [[WFPopupManager sharedManager] dismiss];
+}
+
+@end
