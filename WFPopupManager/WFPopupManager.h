@@ -16,6 +16,7 @@ typedef NS_ENUM(NSInteger, WFPopupAnimationType) {
 };
 
 @interface WFPopupManager : NSObject
+@property (nonatomic, assign) BOOL transparanteMask;
 @property (nonatomic, assign) BOOL canNotDismissByTouchMask;
 
 + (instancetype)sharedManager;

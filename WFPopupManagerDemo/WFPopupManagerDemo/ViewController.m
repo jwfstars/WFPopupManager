@@ -25,6 +25,7 @@
 
 - (IBAction)show:(id)sender {
     DemoPopupController *demo = [DemoPopupController new];
+    [WFPopupManager sharedManager].transparanteMask = NO;
     [[WFPopupManager sharedManager] showWithViewController:demo];
     demo.onDismiss = ^{
         [[WFPopupManager sharedManager] dismiss];

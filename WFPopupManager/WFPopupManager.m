@@ -10,6 +10,8 @@
 #import "WFPopupManagerHelper.h"
 #import <objc/runtime.h>
 
+#define WF_POP_MASK_COLOR [[UIColor blackColor] colorWithAlphaComponent:.5f]
+
 @interface WFPopupRootController : UIViewController
 
 @end
@@ -135,7 +137,6 @@ static WFPopupManager *_instance;
     }
     if (!self.mask) {
         self.mask = [[UIView alloc]initWithFrame:_window.bounds];
-        self.mask.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:.5f];
         self.mask.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
         [self.window addSubview:self.mask];
         self.mask.userInteractionEnabled = YES;
@@ -172,6 +173,7 @@ static WFPopupManager *_instance;
 {
     [self setup];
     
+    self.mask.backgroundColor = WF_POP_MASK_COLOR;
     [self.mask removeGestureRecognizer:self.tapMaskGesture];
     
     if (!self.canNotDismissByTouchMask) {
@@ -205,6 +207,7 @@ static WFPopupManager *_instance;
     self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2);
     self.popupViewContainer.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
     self.mask.alpha = 0;
+    self.mask.backgroundColor = self.transparanteMask ? [UIColor clearColor] : WF_POP_MASK_COLOR;
     self.popupViewContainer.alpha = 0;
     [UIView animateWithDuration:0.3 animations:^{
         self.mask.alpha = 1;
@@ -221,6 +224,7 @@ static WFPopupManager *_instance;
     self.popupViewContainer.frame = CGRectMake(0, 0, 260, 320);
     self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2);
     self.mask.alpha = 0;
+    self.mask.backgroundColor = self.transparanteMask ? [UIColor clearColor] : WF_POP_MASK_COLOR;
     self.popupViewContainer.alpha = 1.0f;
     self.popupViewContainer.wf_height = .0f;
     self.popupViewContainer.wf_y = 64.0f;
@@ -233,6 +237,7 @@ static WFPopupManager *_instance;
 - (void)animationWithActionSheet
 {
     self.mask.alpha = 0;
+    self.mask.backgroundColor = self.transparanteMask ? [UIColor clearColor] : WF_POP_MASK_COLOR;
     self.popupViewContainer.alpha = 1.0f;
     self.popupViewContainer.frame = CGRectMake(0, WFScreenHeight(), WFScreenWidth(), self.currentPopupController.view.wf_height);
     self.currentPopupController.view.wf_x = 0;
@@ -264,6 +269,7 @@ static WFPopupManager *_instance;
         self.window.hidden = YES;
         [self.window resignKeyWindow];
         self.canNotDismissByTouchMask = NO;
+        self.transparanteMask = NO;
         
         if (complete) complete();
         
