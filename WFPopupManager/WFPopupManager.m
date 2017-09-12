@@ -276,24 +276,29 @@ static WFPopupManager *_instance;
         }
         self.mask.alpha = 0;
     } completion:^(BOOL finished) {
-        [self.currentPopupController.view removeFromSuperview];
-        [self.popupQueue removeObject:self.currentPopupController];
-        [self.currentPopupController removeFromParentViewController];
-        self.currentPopupController = nil;
-        self.window.hidden = YES;
-        [self.window resignKeyWindow];
-        self.canNotDismissByTouchMask = NO;
-        self.transparanteMask = NO;
+        [self clear];
         
         if (complete) complete();
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            UIViewController *controller = self.popupQueue.firstObject;
-            if (controller) {
-                [self showWithViewController:controller withAnimation:controller.animationType];
-            }
-        });
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//        });
+        UIViewController *controller = self.popupQueue.firstObject;
+        if (controller) {
+            [self showWithViewController:controller withAnimation:controller.animationType];
+        }
     }];
+}
+
+- (void)clear
+{
+    [self.currentPopupController.view removeFromSuperview];
+    [self.popupQueue removeObject:self.currentPopupController];
+    [self.currentPopupController removeFromParentViewController];
+    self.currentPopupController = nil;
+    self.window.hidden = YES;
+    [self.window resignKeyWindow];
+    self.canNotDismissByTouchMask = NO;
+    self.transparanteMask = NO;
 }
 
 - (void)setOffsetY:(CGFloat)offset animated:(BOOL)animated

@@ -31,6 +31,8 @@ typedef NS_ENUM(NSInteger, WFPopupAnimationType) {
 - (void)dismissOnComplete:(dispatch_block_t)complete;
 
 - (void)setOffsetY:(CGFloat)offset animated:(BOOL)animated;
+
+- (void)clear;
 @end
 
 
