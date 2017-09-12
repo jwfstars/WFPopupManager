@@ -2,7 +2,7 @@
 
 Pod::Spec.new do |s|
   s.name         = 'WFPopupManager'
-  s.version      = '0.1.5'
+  s.version      = '0.1.6'
   s.license = { :type => 'MIT', :text => <<-LICENSE
                    Copyright (c) 2016 江文帆. All rights reserved.
                  LICENSE

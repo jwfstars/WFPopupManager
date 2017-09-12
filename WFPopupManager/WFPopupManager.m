@@ -307,6 +307,13 @@ static WFPopupManager *_instance;
         self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2 + offset);
     }];
 }
+
+- (void)setCenterViewFrame:(CGRect)frame
+{
+    [UIView animateWithDuration:0.3 animations:^{
+        self.popupViewContainer.frame = frame;
+    }];
+}
 @end
 
 @implementation UIViewController (WFPopupManager)
