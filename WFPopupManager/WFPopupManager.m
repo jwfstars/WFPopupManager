@@ -51,6 +51,20 @@
     self.bounds = view.bounds;
     [super addSubview:view];
 }
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event
+{
+    UIView *view = [super hitTest:point withEvent:event];
+    if (view == nil) {
+        for (UIView *subView in self.subviews.firstObject.subviews) {
+            CGPoint p = [subView convertPoint:point fromView:self];
+            if (CGRectContainsPoint(subView.bounds, p)) {
+                view = subView;
+            }
+        }
+    }
+    return view;
+}
 @end
 
 
