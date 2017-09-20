@@ -12,6 +12,19 @@
 
 #define WF_POP_MASK_COLOR [[UIColor blackColor] colorWithAlphaComponent:.5f]
 
+#define WF_ADD_DYNAMIC_PROPERTY(PROPERTY_TYPE,PROPERTY_NAME,SETTER_NAME) \
+@dynamic PROPERTY_NAME ; \
+static char kProperty##PROPERTY_NAME; \
+- ( PROPERTY_TYPE ) PROPERTY_NAME \
+{ \
+return ( PROPERTY_TYPE ) objc_getAssociatedObject(self, &(kProperty##PROPERTY_NAME ) ); \
+} \
+\
+- (void) SETTER_NAME :( PROPERTY_TYPE ) PROPERTY_NAME \
+{ \
+objc_setAssociatedObject(self, &kProperty##PROPERTY_NAME , PROPERTY_NAME , OBJC_ASSOCIATION_RETAIN); \
+}
+
 @interface WFPopupRootController : UIViewController
 
 @end
@@ -70,9 +83,17 @@
 
 @interface UIViewController (WFPopAnimation)
 @property (nonatomic, assign)  WFPopupAnimationType animationType;
+@property (nonatomic, strong) NSNumber *transparanteMask;
+@property (nonatomic, strong) NSNumber *canNotDismissByTouchMask;
+@property (nonatomic, strong) NSNumber *isOld;
 @end
 
 @implementation UIViewController (WFPopAnimation)
+
+
+WF_ADD_DYNAMIC_PROPERTY(NSNumber *, transparanteMask, setTransparanteMask)
+WF_ADD_DYNAMIC_PROPERTY(NSNumber *, canNotDismissByTouchMask, setCanNotDismissByTouchMask)
+WF_ADD_DYNAMIC_PROPERTY(NSNumber *, isOld, setIsOld)
 
 static NSString *WFPopupAnimationTypeKey;
 - (WFPopupAnimationType)animationType
@@ -172,9 +193,14 @@ static WFPopupManager *_instance;
         return;
     }
     
-    viewController.animationType = type;
+    if (![viewController.isOld boolValue]) {
+        viewController.animationType = type;
+        viewController.canNotDismissByTouchMask = @(self.canNotDismissByTouchMask);
+        viewController.transparanteMask = @(self.transparanteMask);
+    }
     
     if (self.currentPopupController) {
+        viewController.isOld = @YES;
         if (![self.popupQueue containsObject:viewController]) {
             [self.popupQueue addObject:viewController];
         }
@@ -190,7 +216,7 @@ static WFPopupManager *_instance;
     self.mask.backgroundColor = WF_POP_MASK_COLOR;
     [self.mask removeGestureRecognizer:self.tapMaskGesture];
     
-    if (!self.canNotDismissByTouchMask) {
+    if (![viewController.canNotDismissByTouchMask boolValue]) {
         [self.mask addGestureRecognizer:self.tapMaskGesture];
     }
     
@@ -221,7 +247,7 @@ static WFPopupManager *_instance;
     self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2);
     self.popupViewContainer.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
     self.mask.alpha = 0;
-    self.mask.backgroundColor = self.transparanteMask ? [UIColor clearColor] : WF_POP_MASK_COLOR;
+    self.mask.backgroundColor = [self.currentPopupController.transparanteMask boolValue] ? [UIColor clearColor] : WF_POP_MASK_COLOR;
     self.popupViewContainer.alpha = 0;
     [UIView animateWithDuration:0.3 animations:^{
         self.mask.alpha = 1;
@@ -238,7 +264,7 @@ static WFPopupManager *_instance;
     self.popupViewContainer.frame = CGRectMake(0, 0, 260, 320);
     self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2);
     self.mask.alpha = 0;
-    self.mask.backgroundColor = self.transparanteMask ? [UIColor clearColor] : WF_POP_MASK_COLOR;
+    self.mask.backgroundColor = [self.currentPopupController.transparanteMask boolValue] ? [UIColor clearColor] : WF_POP_MASK_COLOR;
     self.popupViewContainer.alpha = 1.0f;
     self.popupViewContainer.wf_height = .0f;
     self.popupViewContainer.wf_y = 64.0f;
@@ -251,7 +277,7 @@ static WFPopupManager *_instance;
 - (void)animationWithActionSheet
 {
     self.mask.alpha = 0;
-    self.mask.backgroundColor = self.transparanteMask ? [UIColor clearColor] : WF_POP_MASK_COLOR;
+    self.mask.backgroundColor = [self.currentPopupController.transparanteMask boolValue] ? [UIColor clearColor] : WF_POP_MASK_COLOR;
     self.popupViewContainer.alpha = 1.0f;
     self.popupViewContainer.frame = CGRectMake(0, WFScreenHeight(), WFScreenWidth(), self.currentPopupController.view.wf_height);
     self.currentPopupController.view.wf_x = 0;
