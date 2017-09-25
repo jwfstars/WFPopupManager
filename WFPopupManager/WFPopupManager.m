@@ -294,7 +294,11 @@ static WFPopupManager *_instance;
 
 - (void)dismissOnComplete:(dispatch_block_t)complete
 {
-    [UIView animateWithDuration:0.3 animations:^{
+//    NSTimeInterval dutation = .0f;
+//    if (self.currentPopupController) {
+//        dutation = 0.3;
+//    }
+    [UIView animateWithDuration:0.3f animations:^{
         if (self.currentPopupController.animationType == WFPopupAnimationActionSheet) {
             self.popupViewContainer.wf_y = WFScreenHeight();
         }else {
