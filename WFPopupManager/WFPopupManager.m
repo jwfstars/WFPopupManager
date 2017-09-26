@@ -118,6 +118,7 @@ static NSString *WFPopupAnimationTypeKey;
 @property (nonatomic, strong) NSMutableArray *popupQueue;
 @property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) WFPopupRootController *rootController;
+@property (nonatomic, assign) BOOL isDismissAnimating;
 @end
 
 @implementation WFPopupManager
@@ -294,10 +295,12 @@ static WFPopupManager *_instance;
 
 - (void)dismissOnComplete:(dispatch_block_t)complete
 {
-//    NSTimeInterval dutation = .0f;
-//    if (self.currentPopupController) {
-//        dutation = 0.3;
-//    }
+    if (self.isDismissAnimating) {
+        if (complete) complete();
+        return;
+    }
+    NSLog(@"WFPopupManager dismissOnComplete");
+    self.isDismissAnimating = YES;
     [UIView animateWithDuration:0.3f animations:^{
         if (self.currentPopupController.animationType == WFPopupAnimationActionSheet) {
             self.popupViewContainer.wf_y = WFScreenHeight();
@@ -307,7 +310,7 @@ static WFPopupManager *_instance;
         self.mask.alpha = 0;
     } completion:^(BOOL finished) {
         [self clear];
-        
+        self.isDismissAnimating = NO;
         if (complete) complete();
         
 //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
