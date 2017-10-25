@@ -190,6 +190,13 @@ static WFPopupManager *_instance;
 
 - (void)showWithViewController:(UIViewController *)viewController withAnimation:(WFPopupAnimationType)type
 {
+    if (![NSThread currentThread].isMainThread) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self showWithViewController:viewController withAnimation:type];
+        });
+        return;
+    }
+    
     if (!viewController) {
         return;
     }
