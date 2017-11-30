@@ -116,7 +116,7 @@ static NSString *WFPopupAnimationTypeKey;
 @property (nonatomic, strong) UITapGestureRecognizer *tapMaskGesture;
 
 @property (nonatomic, strong) NSMutableArray *popupQueue;
-@property (nonatomic, strong) UIWindow *window;
+//@property (nonatomic, strong) UIWindow *window;
 @property (nonatomic, strong) WFPopupRootController *rootController;
 @property (nonatomic, assign) BOOL isDismissAnimating;
 @end
@@ -157,30 +157,93 @@ static WFPopupManager *_instance;
     return _tapMaskGesture;
 }
 
++ (UIViewController *)lastPresentController
+{
+    UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
+    if ([controller respondsToSelector:@selector(selectedViewController)]) {
+        controller = [controller performSelector:@selector(selectedViewController)];
+        if ([controller isKindOfClass:[UINavigationController class]]) {
+            UINavigationController *navigationController = (UINavigationController *)controller;
+            controller = navigationController.viewControllers.lastObject;
+        }else {
+            controller = [[self class] topViewController:controller];
+        }
+    }
+    return controller;
+}
+
++ (UIViewController *)topViewController:(UIViewController *)rootViewController
+{
+    if (rootViewController.presentedViewController == nil) {
+        return rootViewController;
+    }
+    
+    if ([rootViewController.presentedViewController isMemberOfClass:[UINavigationController class]]) {
+        UINavigationController *navigationController = (UINavigationController *)rootViewController.presentedViewController;
+        UIViewController *lastViewController = [[navigationController viewControllers] lastObject];
+        return [self topViewController:lastViewController];
+    }
+    
+    UIViewController *presentedViewController = (UIViewController *)rootViewController.presentedViewController;
+    return [self topViewController:presentedViewController];
+}
+
+
 - (void)setup
 {
-    if (!self.window) {
-        self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-        self.window.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-        self.window.windowLevel = UIWindowLevelAlert;
-        // WFPopupManager 标识tag
-        self.window.tag = 6666;
+    UIViewController *targetController = [[self class] lastPresentController];
+//    if (!self.window) {
+//        self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+//        self.window.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+//        self.window.windowLevel = UIWindowLevelAlert;
+//        // WFPopupManager 标识tag
+//        self.window.tag = 6666;
+//    }
+//    if (!self.rootController) {
+//        self.rootController = [WFPopupRootController new];
+//        self.rootController.view.userInteractionEnabled = NO;
+////        self.window.rootViewController = self.rootController;
+//    }
+//    if (!self.mask) {
+//        self.mask = [[UIView alloc]initWithFrame:[UIScreen mainScreen].bounds];
+//        self.mask.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+////        [self.window addSubview:self.mask];
+//        self.mask.userInteractionEnabled = YES;
+//    }
+    [targetController.view addSubview:self.mask];
+    
+//    if (!self.popupViewContainer) {
+//        self.popupViewContainer = [WFPopupContainer new];
+////        [self.window addSubview:self.popupViewContainer];
+//    }
+    [targetController.view addSubview:self.popupViewContainer];
+}
+
+- (UIViewController *)rootController
+{
+    if (!_rootController) {
+        _rootController = [WFPopupRootController new];
+        _rootController.view.userInteractionEnabled = NO;
     }
-    if (!self.rootController) {
-        self.rootController = [WFPopupRootController new];
-        self.rootController.view.userInteractionEnabled = NO;
-        self.window.rootViewController = self.rootController;
+    return _rootController;
+}
+
+- (UIView *)mask
+{
+    if (!_mask) {
+        _mask = [[UIView alloc]initWithFrame:[UIScreen mainScreen].bounds];
+        _mask.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+        _mask.userInteractionEnabled = YES;
     }
-    if (!self.mask) {
-        self.mask = [[UIView alloc]initWithFrame:_window.bounds];
-        self.mask.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-        [self.window addSubview:self.mask];
-        self.mask.userInteractionEnabled = YES;
+    return _mask;
+}
+
+- (UIView *)popupViewContainer
+{
+    if (!_popupViewContainer) {
+        _popupViewContainer = [WFPopupContainer new];
     }
-    if (!self.popupViewContainer) {
-        self.popupViewContainer = [WFPopupContainer new];
-        [self.window addSubview:self.popupViewContainer];
-    }
+    return _popupViewContainer;
 }
 
 - (void)showWithViewController:(UIViewController *)viewController
@@ -231,7 +294,7 @@ static WFPopupManager *_instance;
     viewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
     self.currentPopupController = viewController;
     [self.popupViewContainer addSubview:viewController.view];
-    [_window makeKeyAndVisible];
+//    [_window makeKeyAndVisible];
     
     switch (viewController.animationType) {
         case WFPopupAnimationDefault: {
@@ -252,7 +315,7 @@ static WFPopupManager *_instance;
 - (void)animationWithDefault
 {
     self.popupViewContainer.frame = self.currentPopupController.view.bounds;
-    self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2);
+    self.popupViewContainer.center = CGPointMake([UIScreen mainScreen].bounds.size.width/2, [UIScreen mainScreen].bounds.size.height/2);
     self.popupViewContainer.autoresizingMask = UIViewAutoresizingFlexibleTopMargin|UIViewAutoresizingFlexibleLeftMargin|UIViewAutoresizingFlexibleRightMargin|UIViewAutoresizingFlexibleBottomMargin;
     self.mask.alpha = 0;
     self.mask.backgroundColor = [self.currentPopupController.transparanteMask boolValue] ? [UIColor clearColor] : WF_POP_MASK_COLOR;
@@ -270,7 +333,7 @@ static WFPopupManager *_instance;
 - (void)animationWithDropDown
 {
     self.popupViewContainer.frame = CGRectMake(0, 0, 260, 320);
-    self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2);
+    self.popupViewContainer.center = CGPointMake([UIScreen mainScreen].bounds.size.width/2, [UIScreen mainScreen].bounds.size.height/2);
     self.mask.alpha = 0;
     self.mask.backgroundColor = [self.currentPopupController.transparanteMask boolValue] ? [UIColor clearColor] : WF_POP_MASK_COLOR;
     self.popupViewContainer.alpha = 1.0f;
@@ -335,8 +398,8 @@ static WFPopupManager *_instance;
     [self.popupQueue removeObject:self.currentPopupController];
     [self.currentPopupController removeFromParentViewController];
     self.currentPopupController = nil;
-    self.window.hidden = YES;
-    [self.window resignKeyWindow];
+//    self.window.hidden = YES;
+//    [self.window resignKeyWindow];
     self.canNotDismissByTouchMask = NO;
     self.transparanteMask = NO;
 }
@@ -344,7 +407,7 @@ static WFPopupManager *_instance;
 - (void)setOffsetY:(CGFloat)offset animated:(BOOL)animated
 {
     [UIView animateWithDuration:animated?.3f:.0f animations:^{
-        self.popupViewContainer.center = CGPointMake(_window.wf_width/2, _window.wf_height/2 + offset);
+        self.popupViewContainer.center = CGPointMake([UIScreen mainScreen].bounds.size.width/2, [UIScreen mainScreen].bounds.size.height/2 + offset);
     }];
 }
 
