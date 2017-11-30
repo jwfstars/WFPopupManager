@@ -86,6 +86,7 @@ objc_setAssociatedObject(self, &kProperty##PROPERTY_NAME , PROPERTY_NAME , OBJC_
 @property (nonatomic, strong) NSNumber *transparanteMask;
 @property (nonatomic, strong) NSNumber *canNotDismissByTouchMask;
 @property (nonatomic, strong) NSNumber *isOld;
+@property (nonatomic, strong) UIViewController *popupTarget;
 @end
 
 @implementation UIViewController (WFPopAnimation)
@@ -94,6 +95,8 @@ objc_setAssociatedObject(self, &kProperty##PROPERTY_NAME , PROPERTY_NAME , OBJC_
 WF_ADD_DYNAMIC_PROPERTY(NSNumber *, transparanteMask, setTransparanteMask)
 WF_ADD_DYNAMIC_PROPERTY(NSNumber *, canNotDismissByTouchMask, setCanNotDismissByTouchMask)
 WF_ADD_DYNAMIC_PROPERTY(NSNumber *, isOld, setIsOld)
+WF_ADD_DYNAMIC_PROPERTY(UIViewController *, popupTarget, setPopupTarget)
+
 
 static NSString *WFPopupAnimationTypeKey;
 - (WFPopupAnimationType)animationType
@@ -268,6 +271,7 @@ static WFPopupManager *_instance;
         viewController.animationType = type;
         viewController.canNotDismissByTouchMask = @(self.canNotDismissByTouchMask);
         viewController.transparanteMask = @(self.transparanteMask);
+        viewController.popupTarget = self.popupTarget;
     }
     
     if (self.currentPopupController) {
@@ -282,6 +286,10 @@ static WFPopupManager *_instance;
 
 - (void)_showWithViewController:(UIViewController *)viewController
 {
+    UIViewController *targetController = [[self class] lastPresentController];
+    if (viewController.popupTarget && targetController != viewController.popupTarget) {
+        return;
+    }
     [self setup];
     
     self.mask.backgroundColor = WF_POP_MASK_COLOR;
@@ -402,6 +410,7 @@ static WFPopupManager *_instance;
 //    [self.window resignKeyWindow];
     self.canNotDismissByTouchMask = NO;
     self.transparanteMask = NO;
+    self.popupTarget = nil;
 }
 
 - (void)setOffsetY:(CGFloat)offset animated:(BOOL)animated
