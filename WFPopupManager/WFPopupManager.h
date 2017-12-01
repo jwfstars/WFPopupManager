@@ -15,10 +15,13 @@ typedef NS_ENUM(NSInteger, WFPopupAnimationType) {
     WFPopupAnimationActionSheet = 2
 };
 
+extern NSString *const WF_N_POPUP_WILL_SHOW;
+
 @interface WFPopupManager : NSObject
-@property (nonatomic, strong) UIViewController *popupTarget;
+@property (nonatomic, strong) UIView *popupTargetView;
 @property (nonatomic, strong, readonly) UIViewController *currentPopupController;
 //@property (nonatomic, strong, readonly) UIWindow *window;
+@property (nonatomic, strong, readonly) UIView *mask;
 @property (nonatomic, assign) BOOL transparanteMask;
 @property (nonatomic, assign) BOOL canNotDismissByTouchMask;
 
