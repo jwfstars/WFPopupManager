@@ -197,31 +197,13 @@ static WFPopupManager *_instance;
 - (void)setup
 {
     UIViewController *targetController = [[self class] lastPresentController];
-    //    if (!self.window) {
-    //        self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    //        self.window.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    //        self.window.windowLevel = UIWindowLevelAlert;
-    //        // WFPopupManager 标识tag
-    //        self.window.tag = 6666;
-    //    }
-    //    if (!self.rootController) {
-    //        self.rootController = [WFPopupRootController new];
-    //        self.rootController.view.userInteractionEnabled = NO;
-    ////        self.window.rootViewController = self.rootController;
-    //    }
-    //    if (!self.mask) {
-    //        self.mask = [[UIView alloc]initWithFrame:[UIScreen mainScreen].bounds];
-    //        self.mask.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    ////        [self.window addSubview:self.mask];
-    //        self.mask.userInteractionEnabled = YES;
-    //    }
-    [targetController.view addSubview:self.mask];
-    
-    //    if (!self.popupViewContainer) {
-    //        self.popupViewContainer = [WFPopupContainer new];
-    ////        [self.window addSubview:self.popupViewContainer];
-    //    }
-    [targetController.view addSubview:self.popupViewContainer];
+    if (targetController.navigationController) {
+        [targetController.navigationController.view addSubview:self.mask];
+        [targetController.navigationController.view addSubview:self.popupViewContainer];
+    }else {
+        [targetController.view addSubview:self.mask];
+        [targetController.view addSubview:self.popupViewContainer];
+    }
 }
 
 - (UIViewController *)rootController
