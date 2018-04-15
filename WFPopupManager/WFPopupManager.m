@@ -10,6 +10,29 @@
 #import "WFPopupManagerHelper.h"
 #import <objc/runtime.h>
 
+CGFloat WFPopupManagerScreenHeight(void)
+{
+    CGRect rect = [[UIScreen mainScreen] bounds];
+    UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
+    if (UIInterfaceOrientationLandscapeLeft == orientation || UIInterfaceOrientationLandscapeRight == orientation) {
+        return rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
+    } else {
+        return rect.size.width > rect.size.height ? rect.size.width : rect.size.height;
+    }
+}
+
+CGFloat WFPopupManagerScreenWidth(void)
+{
+    CGRect rect = [[UIScreen mainScreen] bounds];
+    UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
+    if (UIInterfaceOrientationLandscapeLeft == orientation || UIInterfaceOrientationLandscapeRight == orientation) {
+        return rect.size.width > rect.size.height ? rect.size.width : rect.size.height;
+    } else {
+        return rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
+    }
+}
+
+
 NSString *const WF_N_POPUP_WILL_SHOW = @"WF_N_POPUP_WILL_SHOW";
 
 #define WF_POP_MASK_COLOR [[UIColor blackColor] colorWithAlphaComponent:.5f]
@@ -197,13 +220,17 @@ static WFPopupManager *_instance;
 - (void)setup
 {
     UIViewController *targetController = [[self class] lastPresentController];
+    UIView *view = targetController.view;
     if (targetController.navigationController) {
-        [targetController.navigationController.view addSubview:self.mask];
-        [targetController.navigationController.view addSubview:self.popupViewContainer];
-    }else {
-        [targetController.view addSubview:self.mask];
-        [targetController.view addSubview:self.popupViewContainer];
+        view = targetController.navigationController.view;
+        if (targetController.navigationController.viewControllers.count == 1 &&
+            [targetController.navigationController.parentViewController isKindOfClass:[UITabBarController class]]
+            ) {
+            view = targetController.navigationController.parentViewController.view;
+        }
     }
+    [view addSubview:self.mask];
+    [view addSubview:self.popupViewContainer];
 }
 
 - (UIViewController *)rootController
@@ -345,11 +372,11 @@ static WFPopupManager *_instance;
     self.mask.alpha = 0;
     self.mask.backgroundColor = [self.currentPopupController.transparanteMask boolValue] ? [UIColor clearColor] : WF_POP_MASK_COLOR;
     self.popupViewContainer.alpha = 1.0f;
-    self.popupViewContainer.frame = CGRectMake(0, WFScreenHeight(), WFScreenWidth(), self.currentPopupController.view.wf_height);
+    self.popupViewContainer.frame = CGRectMake(0, WFPopupManagerScreenHeight(), WFPopupManagerScreenWidth(), self.currentPopupController.view.wf_height);
     self.currentPopupController.view.wf_x = 0;
     [UIView animateWithDuration:0.3 animations:^{
         self.mask.alpha = 1;
-        self.popupViewContainer.wf_y = WFScreenHeight() - self.currentPopupController.view.wf_height;
+        self.popupViewContainer.wf_y = WFPopupManagerScreenHeight() - self.currentPopupController.view.wf_height;
     }];
 }
 
@@ -368,7 +395,7 @@ static WFPopupManager *_instance;
     self.isDismissAnimating = YES;
     [UIView animateWithDuration:0.3f animations:^{
         if (self.currentPopupController.animationType == WFPopupAnimationActionSheet) {
-            self.popupViewContainer.wf_y = WFScreenHeight();
+            self.popupViewContainer.wf_y = WFPopupManagerScreenHeight();
         }else {
             self.popupViewContainer.alpha = 0;
         }

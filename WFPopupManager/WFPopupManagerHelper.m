@@ -76,25 +76,3 @@
 }
 
 @end
-
-CGFloat WFScreenHeight(void)
-{
-    CGRect rect = [[UIScreen mainScreen] bounds];
-    UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
-    if (UIInterfaceOrientationLandscapeLeft == orientation || UIInterfaceOrientationLandscapeRight == orientation) {
-        return rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
-    } else {
-        return rect.size.width > rect.size.height ? rect.size.width : rect.size.height;
-    }
-}
-
-CGFloat WFScreenWidth(void)
-{
-    CGRect rect = [[UIScreen mainScreen] bounds];
-    UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
-    if (UIInterfaceOrientationLandscapeLeft == orientation || UIInterfaceOrientationLandscapeRight == orientation) {
-        return rect.size.width > rect.size.height ? rect.size.width : rect.size.height;
-    } else {
-        return rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
-    }
-}

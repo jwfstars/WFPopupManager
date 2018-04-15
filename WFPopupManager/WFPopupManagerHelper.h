@@ -17,7 +17,3 @@
 @property (nonatomic, assign) CGFloat wf_width;
 @property (nonatomic, assign) CGFloat wf_height;
 @end
-
-CGFloat WFScreenHeight(void);
-
-CGFloat WFScreenWidth(void);
