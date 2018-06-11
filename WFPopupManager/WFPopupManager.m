@@ -185,9 +185,8 @@ static WFPopupManager *_instance;
     return _tapMaskGesture;
 }
 
-+ (UIViewController *)lastPresentController
++ (UIViewController *)lastPresentController:(UIViewController *)controller
 {
-    UIViewController *controller = [UIApplication sharedApplication].keyWindow.rootViewController;
     if ([controller respondsToSelector:@selector(selectedViewController)]) {
         controller = [controller performSelector:@selector(selectedViewController)];
         if ([controller isKindOfClass:[UINavigationController class]]) {
@@ -196,6 +195,12 @@ static WFPopupManager *_instance;
         }else {
             controller = [[self class] topViewController:controller];
         }
+    }else if ([controller isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *navigationController = (UINavigationController *)controller;
+        controller = navigationController.viewControllers.lastObject;
+    }
+    if (controller.presentedViewController) {
+        return [self lastPresentController:controller.presentedViewController];
     }
     return controller;
 }
@@ -219,7 +224,7 @@ static WFPopupManager *_instance;
 
 - (void)setup
 {
-    UIViewController *targetController = [[self class] lastPresentController];
+    UIViewController *targetController = [[self class] lastPresentController:[UIApplication sharedApplication].keyWindow.rootViewController];
     UIView *view = targetController.view;
     if (targetController.navigationController) {
         view = targetController.navigationController.view;
@@ -297,7 +302,7 @@ static WFPopupManager *_instance;
 
 - (void)_showWithViewController:(UIViewController *)viewController
 {
-    UIViewController *targetController = [[self class] lastPresentController];
+    UIViewController *targetController = [[self class] lastPresentController:[UIApplication sharedApplication].keyWindow.rootViewController];
     if (viewController.popupTargetView && targetController.view != viewController.popupTargetView && ![targetController.view.subviews containsObject:viewController.popupTargetView]) {
         return;
     }
