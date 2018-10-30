@@ -122,7 +122,6 @@ WF_ADD_DYNAMIC_PROPERTY(NSNumber *, canNotDismissByTouchMask, setCanNotDismissBy
 WF_ADD_DYNAMIC_PROPERTY(NSNumber *, isOld, setIsOld)
 WF_ADD_DYNAMIC_PROPERTY(UIViewController *, popupTargetView, setPopupTargetView)
 
-
 static NSString *WFPopupAnimationTypeKey;
 - (WFPopupAnimationType)animationType
 {
@@ -180,62 +179,33 @@ static WFPopupManager *_instance;
 - (UITapGestureRecognizer *)tapMaskGesture
 {
     if (!_tapMaskGesture) {
-        _tapMaskGesture = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(dismiss)];
+        _tapMaskGesture = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(onTapMask:)];
     }
     return _tapMaskGesture;
 }
 
-+ (UIViewController *)lastPresentController:(UIViewController *)controller
-{
-    if ([controller respondsToSelector:@selector(selectedViewController)]) {
-        controller = [controller performSelector:@selector(selectedViewController)];
-        if ([controller isKindOfClass:[UINavigationController class]]) {
-            UINavigationController *navigationController = (UINavigationController *)controller;
-            controller = navigationController.viewControllers.lastObject;
-        }else {
-            controller = [[self class] topViewController:controller];
-        }
-    }else if ([controller isKindOfClass:[UINavigationController class]]) {
-        UINavigationController *navigationController = (UINavigationController *)controller;
-        controller = navigationController.viewControllers.lastObject;
-    }
-    if (controller.presentedViewController) {
-        return [self lastPresentController:controller.presentedViewController];
-    }
-    return controller;
++ (UIViewController *)lastPresentController {
+    return [self getVisibleViewControllerFrom:[UIApplication sharedApplication].keyWindow.rootViewController];
 }
 
-+ (UIViewController *)topViewController:(UIViewController *)rootViewController
-{
-    if (rootViewController.presentedViewController == nil) {
-        return rootViewController;
-    }
-    
-    if ([rootViewController.presentedViewController isMemberOfClass:[UINavigationController class]]) {
-        UINavigationController *navigationController = (UINavigationController *)rootViewController.presentedViewController;
-        UIViewController *lastViewController = [[navigationController viewControllers] lastObject];
-        return [self topViewController:lastViewController];
-    }
-    
-    UIViewController *presentedViewController = (UIViewController *)rootViewController.presentedViewController;
-    return [self topViewController:presentedViewController];
-}
-
-
-- (void)setup
-{
-    UIViewController *targetController = [[self class] lastPresentController:[UIApplication sharedApplication].keyWindow.rootViewController];
-    UIView *view = targetController.view;
-    if (targetController.navigationController) {
-        view = targetController.navigationController.view;
-        if (targetController.navigationController.viewControllers.count == 1 &&
-            [targetController.navigationController.parentViewController isKindOfClass:[UITabBarController class]]
-            ) {
-            view = targetController.navigationController.parentViewController.view;
++ (UIViewController *)getVisibleViewControllerFrom:(UIViewController *)vc {
+    if ([vc isKindOfClass:[UINavigationController class]]) {
+        return [self getVisibleViewControllerFrom:[((UINavigationController *) vc) visibleViewController]];
+    } else if ([vc isKindOfClass:[UITabBarController class]]) {
+        return [self getVisibleViewControllerFrom:[((UITabBarController *) vc) selectedViewController]];
+    } else if ([[NSStringFromClass([vc class]) lowercaseString] containsString:@"tabbarcontroller"]) {
+        if ([vc respondsToSelector:@selector(selectedViewController)]) {
+            return [self getVisibleViewControllerFrom:[((UITabBarController *) vc) selectedViewController]];
+        }
+        return vc;
+    } else {
+        
+        if (vc.presentedViewController) {
+            return [self getVisibleViewControllerFrom:vc.presentedViewController];
+        } else {
+            return vc;
         }
     }
-    [view addSubview:self.mask];
-    [view addSubview:self.popupViewContainer];
 }
 
 - (UIViewController *)rootController
@@ -302,14 +272,32 @@ static WFPopupManager *_instance;
 
 - (void)_showWithViewController:(UIViewController *)viewController
 {
-    UIViewController *targetController = [[self class] lastPresentController:[UIApplication sharedApplication].keyWindow.rootViewController];
-    if (viewController.popupTargetView && targetController.view != viewController.popupTargetView && ![targetController.view.subviews containsObject:viewController.popupTargetView]) {
-        return;
+    UIViewController *targetController;
+    if ([viewController.popupTargetView isEqual:[UIApplication sharedApplication].keyWindow.rootViewController.view]) {
+        targetController = [UIApplication sharedApplication].keyWindow.rootViewController;
+    }else {
+        targetController = [[self class] lastPresentController];
+        if (viewController.popupTargetView &&
+            targetController.view != viewController.popupTargetView &&
+            ![targetController.view.subviews containsObject:viewController.popupTargetView]) {
+            return;
+        }
+    }
+    
+    UIView *targetView = targetController.view;
+    if (targetController.navigationController) {
+        targetView = targetController.navigationController.view;
+        if (targetController.navigationController.viewControllers.count == 1 &&
+            [targetController.navigationController.parentViewController isKindOfClass:[UITabBarController class]]
+            ) {
+            targetView = targetController.navigationController.parentViewController.view;
+        }
     }
     
     [[NSNotificationCenter defaultCenter] postNotificationName:WF_N_POPUP_WILL_SHOW object:nil];
     
-    [self setup];
+    [targetView addSubview:self.mask];
+    [targetView addSubview:self.popupViewContainer];
     
     self.mask.backgroundColor = WF_POP_MASK_COLOR;
     [self.mask removeGestureRecognizer:self.tapMaskGesture];
@@ -336,6 +324,10 @@ static WFPopupManager *_instance;
             [self animationWithActionSheet];
             break;
         }
+        case WFPopupAnimationLeftSlide: {
+            [self animationWithLeftSlide];
+            break;
+        }
     }
 }
 
@@ -354,7 +346,12 @@ static WFPopupManager *_instance;
     self.popupViewContainer.transform = CGAffineTransformMakeScale(1.3, 1.3);
     [UIView animateWithDuration:0.6 delay:0 usingSpringWithDamping:0.55 initialSpringVelocity:0 options:UIViewAnimationOptionTransitionNone animations:^{
         self.popupViewContainer.transform = CGAffineTransformIdentity;
-    } completion:nil];
+    } completion:^(BOOL success){
+        if (self.didShowBlock) {
+            self.didShowBlock();
+            self.didShowBlock = nil;
+        }
+    }];
 }
 
 - (void)animationWithDropDown
@@ -369,6 +366,11 @@ static WFPopupManager *_instance;
     [UIView animateWithDuration:0.3 animations:^{
         self.mask.alpha = 1;
         self.popupViewContainer.wf_height = 400.0f;
+    } completion:^(BOOL success){
+        if (self.didShowBlock) {
+            self.didShowBlock();
+            self.didShowBlock = nil;
+        }
     }];
 }
 
@@ -382,7 +384,40 @@ static WFPopupManager *_instance;
     [UIView animateWithDuration:0.3 animations:^{
         self.mask.alpha = 1;
         self.popupViewContainer.wf_y = WFPopupManagerScreenHeight() - self.currentPopupController.view.wf_height;
+    } completion:^(BOOL success){
+        if (self.didShowBlock) {
+            self.didShowBlock();
+            self.didShowBlock = nil;
+        }
     }];
+}
+
+- (void)animationWithLeftSlide
+{
+    self.mask.alpha = 0;
+    self.mask.backgroundColor = [self.currentPopupController.transparanteMask boolValue] ? [UIColor clearColor] : WF_POP_MASK_COLOR;
+    self.popupViewContainer.alpha = 1.0f;
+    self.popupViewContainer.frame = CGRectMake(0, 0, self.currentPopupController.view.wf_width, WFPopupManagerScreenHeight());
+    self.popupViewContainer.wf_x = - self.currentPopupController.view.wf_width;
+    self.popupViewContainer.wf_y = 0;
+    [UIView animateWithDuration:0.3 animations:^{
+        self.mask.alpha = 1;
+        self.popupViewContainer.wf_x = 0;
+    } completion:^(BOOL success){
+        if (self.didShowBlock) {
+            self.didShowBlock();
+            self.didShowBlock = nil;
+        }
+    }];
+}
+
+- (void)onTapMask:(UITapGestureRecognizer *)rec
+{
+    [self.currentPopupController wf_dismiss];
+    if (self.onTapMaskBlock) {
+        self.onTapMaskBlock();
+        self.onTapMaskBlock = nil;
+    }
 }
 
 - (void)dismiss
@@ -401,7 +436,10 @@ static WFPopupManager *_instance;
     [UIView animateWithDuration:0.3f animations:^{
         if (self.currentPopupController.animationType == WFPopupAnimationActionSheet) {
             self.popupViewContainer.wf_y = WFPopupManagerScreenHeight();
-        }else {
+        }else if (self.currentPopupController.animationType == WFPopupAnimationLeftSlide) {
+            self.popupViewContainer.wf_x = - self.currentPopupController.view.wf_width;
+        }
+        else {
             self.popupViewContainer.alpha = 0;
         }
         self.mask.alpha = 0;
@@ -409,12 +447,13 @@ static WFPopupManager *_instance;
         [self clear];
         self.isDismissAnimating = NO;
         if (complete) complete();
-        
-        //        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        //        });
         UIViewController *controller = self.popupQueue.firstObject;
         if (controller) {
             [self showWithViewController:controller withAnimation:controller.animationType];
+        }
+        if (self.dismissBlock) {
+            self.dismissBlock();
+            self.dismissBlock = nil;
         }
     }];
 }
@@ -455,4 +494,5 @@ static WFPopupManager *_instance;
 }
 
 @end
+
 

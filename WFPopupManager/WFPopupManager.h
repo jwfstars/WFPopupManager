@@ -12,7 +12,8 @@
 typedef NS_ENUM(NSInteger, WFPopupAnimationType) {
     WFPopupAnimationDefault = 0,
     WFPopupAnimationDropDown = 1,
-    WFPopupAnimationActionSheet = 2
+    WFPopupAnimationActionSheet = 2,
+    WFPopupAnimationLeftSlide = 3,
 };
 
 extern NSString *const WF_N_POPUP_WILL_SHOW;
@@ -20,10 +21,12 @@ extern NSString *const WF_N_POPUP_WILL_SHOW;
 @interface WFPopupManager : NSObject
 @property (nonatomic, strong) UIView *popupTargetView;
 @property (nonatomic, strong, readonly) UIViewController *currentPopupController;
-//@property (nonatomic, strong, readonly) UIWindow *window;
 @property (nonatomic, strong, readonly) UIView *mask;
 @property (nonatomic, assign) BOOL transparanteMask;
 @property (nonatomic, assign) BOOL canNotDismissByTouchMask;
+@property (nonatomic,   copy) dispatch_block_t onTapMaskBlock;
+@property (nonatomic,   copy) dispatch_block_t dismissBlock;
+@property (nonatomic,   copy) dispatch_block_t didShowBlock;
 
 + (instancetype)sharedManager;
 
